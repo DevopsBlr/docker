@@ -1,0 +1,137 @@
+create table tbl_employee_tja58(
+
+EmpId varchar2(25) primary key,
+EmpName varchar2(25),
+Designation varchar2(25),
+ContactNo number(10),
+EmailId varchar2(25)
+);
+
+
+
+
+create table tbl_customer_tja58(
+CustomerId varchar2(9) primary key,
+Status varchar2(25) check (Status in('active','inactive')),
+SsnId   number(10) unique,
+CustomerName varchar2(25) not null,
+Age number(3) not null,
+AddressLine1 varchar2(25) not null,
+AddressLine2 varchar2(25),
+City varchar2(15) not null,
+State varchar2(15) not null
+
+);
+
+
+insert into tbl_employee_tja58 values('111','sangee','Manager',3478374,'xyz@gmail.com');
+insert into tbl_employee_tja58 values('123','sangee','Manager',3478374,'xyz@gmail.com');
+insert into tbl_employee_tja58 values('EMP103','js','cashier',3478374,'xyz@gmail.com');
+
+
+insert into tbl_login_tja58 values('null','null','null','Active');
+
+select * from tbl_employee_tja58;
+select * from tbl_login_tja58;
+
+Truncate table  tbl_login_tja58;
+
+Truncate table tbl_employee_tja58;
+
+Truncate table tbl_customer_tja58;
+
+Truncate table tbl_account_tja58;
+
+Truncate table tbl_transaction_tja58;
+
+delete from tbl_customer_tja58 where CustomerId='CUS102';
+drop table tbl_transaction_tja58;
+select * from tbl_customer_tja58;
+insert into TBL_CUSTOMER_TJA58 values('CUS'||Customer_TJA58.nextval,'active',123456,'challa',22,'tvm','kl','trichy','tvc');
+drop sequence Customer_TJA58;
+create sequence Customer_TJA58
+start with 100000
+increment by 1
+nocycle nocache;
+create table tbl_login_tja58(
+userId varchar2(25) not null,
+password varchar2(25) not null,
+role varchar2(10) not null,
+Status varchar2(15) not null
+);
+select * from tbl_login_tja58;
+drop table tbl_login_tja58;
+truncate table tbl_customer_tja58;
+
+update tbl_customer_tja58 set CustomerName='hdfj', Age=45, AddressLine1='dfd',AddressLine2='dfd',City='df' where CustomerId='143';
+
+
+insert into tbl_login_tja58 values('user4','user123','Manager','Active');
+insert into tbl_login_tja58 values('user5','user1234','customer','Active');
+insert into tbl_login_tja58 values('EMP103','user123','cashier','Active');
+insert into tbl_login_tja58 values('CUS100002','user12','customer','Active');
+
+insert into tbl_login_tja58 values('user7','user12345','Cashier','Inactive');
+
+create table tbl_security_tja58(
+CustomerId varchar2(50),
+SecurityQno varchar2(10),
+SecurityAns varchar2(100) default '1234'
+);
+select * from tbl_security_tja58;
+
+insert into TBL_SECURITY_TJA58 values('user2','1234');
+
+
+drop table tbl_security_tja58;
+
+//Account//
+
+create table tbl_account_tja58(customer_id varchar(9),
+account_id varchar(9) primary key,
+account_type varchar(30),
+balance number not null,
+credited_date date,
+credited_lastdate date,
+noofTranscation number,
+status varchar(10),
+foreign key(customer_id) references tbl_customer_tja58(CustomerId));
+
+drop table tbl_account_tja58;
+
+select * from tbl_account_tja58
+
+
+select * from tbl_customer_tja58
+
+create table tbl_Transaction_tja58(
+
+transaction_id        number(10) primary key,
+
+account_id            varchar(9),
+
+action                varchar(15)   check(action='withdraw' or action='deposit' or action='transfer'),
+
+transaction_date   date,
+
+amount                number(6),
+
+target_account_id     varchar(9),
+
+constraint accountfk22 foreign key(account_id)
+references tbl_Account_tja58(account_id),
+
+constraint target_accountfk22 foreign key(target_account_id)
+references tbl_Account_tja58(account_id)
+
+);
+
+drop sequence seq_dep_tra
+
+create sequence seq_dep_tra
+start with 100
+increment by 1
+nocycle;
+
+
+drop table tbl_Transaction_tja58;

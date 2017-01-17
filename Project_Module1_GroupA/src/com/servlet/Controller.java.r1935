@@ -1,0 +1,267 @@
+package com.servlet;
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.bean.Account;
+import com.bean.Transaction;
+
+
+
+import com.service.Ser;
+import com.DBUtil.*;
+
+/**
+ * Servlet implementation class Controller
+ */
+@WebServlet("/Controller")
+public class Controller extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	Ser s = new Ser();
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public Controller() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doPost(request,response);
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+
+		String a = request.getParameter("action");
+		System.out.println(a);
+System.out.println("dsfgdg");
+		if(a.equals("Deposit")){
+			
+			String accId  = request.getParameter("acc");
+			String b = request.getParameter("amount");
+			String c = request.getParameter("balance");
+			
+			long deposit = Long.parseLong(b);
+			long balance = Long.parseLong(c);
+			long u = deposit+balance;
+			s.updateBalance(u,accId);	
+			long tran = s.insertTransaction(accId,"deposit",deposit,u);
+			s.updateDate(tran,accId);
+			s.numberoftrans(accId);
+			RequestDispatcher rd = request.getRequestDispatcher("JSP/deposited.jsp");
+			request.setAttribute("latest", u);
+			request.setAttribute("old", balance);
+			request.setAttribute("tran", tran);
+			request.setAttribute("accid", accId);
+			request.setAttribute("amount",deposit);
+			rd.forward(request, response);
+			
+		}
+		
+		if(a.equals("Withdraw")){
+
+			String accId = request.getParameter("acc");
+			
+			String amount = request.getParameter("amount");
+			long Wamount = Long.parseLong(amount);
+			long balance = Long.parseLong(request.getParameter("balance"));
+			long latest = balance-Wamount;
+			
+			s.updateBalance(latest,accId);	
+			long tran = s.insertTransaction(accId,"withdraw",Wamount,latest);
+		    s.numberoftrans(accId);
+			s.updateDate(tran,accId);
+			RequestDispatcher rd = request.getRequestDispatcher("JSP/withdrawn.jsp");
+			request.setAttribute("latest", latest);		
+			request.setAttribute("old", balance);
+			request.setAttribute("tran", tran);
+			request.setAttribute("accid", accId);
+			request.setAttribute("amount",Wamount);
+			
+			
+			rd.forward(request, response);
+		}
+		if(a.equals("Transfer")){
+			//response.sendRedirect("jsp/transferdetails.jsp");
+			Transaction t = new Transaction();
+			String accounttype =request.getParameter("acctype");
+			String cus =request.getParameter("cus");
+			String acc  =request.getParameter("acc");
+			String d3 =request.getParameter("balance");
+			String d4 =request.getParameter("amount");
+			ArrayList<String> accc = s.getaccounts();
+			long balance = Long.parseLong(d3);
+			long amount = Long.parseLong(d4);
+			
+			t.setCustid(cus);
+			t.setAcc_id(acc);
+			t.setBalance(balance);
+			t.setAmount(amount);
+			t.setAcctype(accounttype);
+			 
+			RequestDispatcher rd=request.getRequestDispatcher("JSP/transferdetails.jsp");
+			request.setAttribute("obj", t);
+			request.setAttribute("account",accc);
+			rd.forward(request, response);
+
+		}
+		if(a.equals("transfer amount")){
+			String accId=request.getParameter("acc");
+			String taccId= request.getParameter("tac");
+			long tamount=Long.parseLong(request.getParameter("amount"));			
+			long balanceS = s.getBalance(accId);	
+			long balanceT=s.getBalance(taccId);
+			long tIDbalance = balanceT+tamount;
+			long sIDbalance = balanceS-tamount;
+			s.updateBalance(sIDbalance,accId);
+			s.updateBalance(tIDbalance,taccId);
+			long tran = s.insertTransaction(accId,"transfer",tamount,taccId,sIDbalance);
+			s.updateDate(tran,accId);
+			s.numberoftrans(accId);
+			RequestDispatcher rd = request.getRequestDispatcher("JSP/transfered.jsp");
+			request.setAttribute("sIDbalance", sIDbalance);
+			request.setAttribute("tIDbalance",tIDbalance);
+			request.setAttribute("tran", tran);
+			request.setAttribute("amount", tamount);
+			request.setAttribute("accid", accId);
+			request.setAttribute("tccid", taccId);
+			rd.forward(request, response);	
+		}
+	if(a.equalsIgnoreCase("getaccount")){
+			System.out.println("dssfs");
+			RequestDispatcher rd=request.getRequestDispatcher("JSP/freash.jsp");
+			request.setAttribute("source", a);
+			rd.forward(request, response);
+			
+		}
+
+
+
+	if(a.equalsIgnoreCase("display"))
+	{
+		Transaction t=new Transaction();
+		String accountid = request.getParameter("accid");
+		t=s.view(accountid);
+		RequestDispatcher rd=request.getRequestDispatcher("JSP/displaycust.jsp");
+		request.setAttribute("transbean", t);
+		rd.forward(request, response);		
+}	
+	if(a.equalsIgnoreCase("getstate"))
+		{
+			ArrayList<String> accountids = new ArrayList<String>();
+			accountids=s.getaccounts();
+			RequestDispatcher rd=request.getRequestDispatcher("JSP/statement.jsp");
+			request.setAttribute("account", accountids);
+			rd.forward(request, response);
+
+		}
+
+
+		if(a.equalsIgnoreCase("View All Transactions by Date"))
+		{
+		
+			String accountid=request.getParameter("accid");
+			String start_date=Datestring.datestring(request.getParameter("startdate"),"yyyy-mm-dd");
+			String end_date=Datestring.datestring(request.getParameter("enddate"),"yyyy-mm-dd");
+			ArrayList<Transaction> t=s.getstatement(accountid,start_date,end_date);
+			RequestDispatcher rd=request.getRequestDispatcher("JSP/statemantdisplay.jsp");
+			request.setAttribute("transferdetails", t);
+			rd.forward(request, response);
+		}
+
+		if(a.equals("Get Last Ten Statements"))
+		{
+			String accountid=request.getParameter("accid");
+			ArrayList<Transaction> t=s.gettenstatement(accountid);
+			RequestDispatcher rd=request.getRequestDispatcher("JSP/statemantdisplay.jsp");
+			request.setAttribute("transferdetails", t);
+			rd.forward(request, response);
+		}
+
+		if(a.equals("go"))
+		{
+
+			String customer_id=request.getParameter("customerid");
+            
+            
+			ArrayList<String> accountids = new ArrayList<String>();
+
+			accountids=s.getacctsofcust(customer_id);
+			
+			RequestDispatcher rd=request.getRequestDispatcher("JSP/freash.jsp");
+			request.setAttribute("source","cust_acc");
+			request.setAttribute("custid",customer_id );
+			request.setAttribute("account", accountids);
+			rd.forward(request, response);
+			}
+		
+		if(a.equals("home"))
+		{
+			response.sendRedirect(request.getContextPath()+"/JSP/home.jsp");
+		}
+		
+		if(a.equals("cust_selected"))
+        {
+        	String x=request.getParameter("selection");
+        	if(x.equals("customerid"))
+        	{
+        		ArrayList<String> customerids = new ArrayList<String>();
+        		customerids=s.getcustomer();
+        		RequestDispatcher rd=request.getRequestDispatcher("JSP/freash.jsp");
+        		request.setAttribute("customer", customerids);
+        		request.setAttribute("source", "customerselected");
+        		request.setAttribute("sel1", "customerid");
+        		rd.forward(request, response);
+        		
+        	}
+             if(x.equals("accountid"))	
+             {
+            	 ArrayList<String> accountids = new ArrayList<String>();
+            	 accountids=s.getaccounts();
+            	 RequestDispatcher rd=request.getRequestDispatcher("JSP/freash.jsp");
+            	 request.setAttribute("source", "accountselected");
+            	 request.setAttribute("account", accountids);
+            	 rd.forward(request, response);
+             }
+       }
+        if(a.equals("getministatement"))
+        {
+        	String customer_id=request.getParameter("cust_id");
+        	System.out.println(customer_id);
+        	ArrayList<String> accountids = new ArrayList<String>();
+            accountids=s.getacctsofcust(customer_id);
+            RequestDispatcher rd=request.getRequestDispatcher("JSP/statement.jsp");
+			request.setAttribute("account", accountids);
+			rd.forward(request, response);
+			}
+        if(a.equals("view all transactions"))
+        {
+        	ArrayList<Transaction> t=s.getalltransatcions();
+			RequestDispatcher rd=request.getRequestDispatcher("JSP/statemantdisplay.jsp");
+			request.setAttribute("transferdetails", t);
+			rd.forward(request, response);
+        	 
+        }
+	}
+
+}
